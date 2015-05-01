@@ -12,7 +12,7 @@ import (
 
 func main() {
 	flag.Parse()
-	cmd := exec.Command("ls", "-R")
+	cmd := exec.Command("pwd")
 	b, e := cmd.CombinedOutput()
 	fmt.Println(string(b), e)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
