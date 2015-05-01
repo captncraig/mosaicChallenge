@@ -1,13 +1,20 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
 
 	"github.com/captncraig/mosaicChallenge/imgur"
 )
 
 func main() {
+	flag.Parse()
+	cmd := exec.Command("ls", "-R")
+	b, e := cmd.CombinedOutput()
+	fmt.Println(string(b), e)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/oauth", imgur.HandleCallback)
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, imgur.ImgurLoginUrl(), 302) })
