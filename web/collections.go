@@ -50,7 +50,7 @@ func init() {
 func loadBuiltInCollections() {
 	collections = map[string]*imageCollection{
 		// these would also normally be dynamically loaded from a config file or something but focus moved away from web app.
-		"Design-seeds": {"Thumbnails scraped from design-seeds.com. Great for color variety.", "../collections/designseeds", mosaics.NewLibrary(mosaics.AveragingEvaluator()), 0},
+		"Design-seeds": {"Thumbnails scraped from design-seeds.com. Great for color variety.", "designseeds", mosaics.NewLibrary(mosaics.AveragingEvaluator()), 0},
 		"Aww":          {"top images from /r/aww", "reddits/aww", mosaics.NewLibrary(mosaics.AveragingEvaluator()), 0},
 		"Cats":         {"top images from /r/cats", "reddits/cats", mosaics.NewLibrary(mosaics.AveragingEvaluator()), 0},
 		"Food":         {"top images from /r/food", "reddits/food", mosaics.NewLibrary(mosaics.AveragingEvaluator()), 0},
