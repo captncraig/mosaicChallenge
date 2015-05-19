@@ -169,7 +169,7 @@ func (t *ImgurAccessToken) storeInCookie(w http.ResponseWriter) {
 // I'd also rather not store it serverside for this challenge either :)
 // We will use this function to encode the token for putting in cookie.
 //
-// Token -> json -> aes(cfc) + hmac -> base64
+// Token -> json -> aes(cfb) + hmac -> base64
 func (t *ImgurAccessToken) encodeForCookie() string {
 	plaintext, err := json.Marshal(t)
 	if err != nil {

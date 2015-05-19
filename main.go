@@ -16,7 +16,7 @@ import (
 
 func main() {
 	lib := mosaics.NewLibrary(mosaics.AveragingEvaluator())
-	dirname := "collections/designseeds"
+	dirname := "collections/bttf"
 	files, err := ioutil.ReadDir(dirname)
 	if err != nil {
 		log.Fatal(err)
@@ -26,7 +26,7 @@ func main() {
 		img, _ := parseFile(dirname, file.Name())
 		lib.AddImage(img)
 	}
-	f, err := os.Open("in.jpg")
+	f, err := os.Open("bttf.jpg")
 	if err != nil {
 		log.Fatal(err)
 	}

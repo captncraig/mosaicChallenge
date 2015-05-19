@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 )
 
 var t *template.Template
@@ -27,7 +28,13 @@ func (e ErrNoTemplate) Error() string {
 	return fmt.Sprintf("template not found: %s", e.name)
 }
 
-func renderTemplate(w io.Writer, name string, data interface{}) error {
+// render given template to w with header before and footer after.
+func renderTemplate(w io.Writer, name string, data interface{}) (e error) {
+	defer func() {
+		if e != nil {
+			log.Println(e)
+		}
+	}()
 	t, err := loadTemplates()
 	if err != nil {
 		return err

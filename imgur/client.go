@@ -1,9 +1,12 @@
 package imgur
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 // http client to make all non-user-specific imgur queries.
@@ -24,6 +27,7 @@ func init() {
 
 type ImgurClient interface {
 	GetTopSubredditImages(r string, n int) ([]string, error)
+	UploadImage(data []byte) (string, error)
 }
 
 func NewClient(tok *ImgurAccessToken) ImgurClient {
@@ -34,12 +38,9 @@ type client struct {
 	token *ImgurAccessToken
 }
 
-func init() {
-
-}
-
 const (
-	qGetSubredditImages = "https://api.imgur.com/3/gallery/r/%s/top/all/%d"
+	urlGetSubredditImages = "https://api.imgur.com/3/gallery/r/%s/top/all/%d"
+	urlUpload             = "https://api.imgur.com/3/image"
 )
 
 type galleryImageList struct {
@@ -65,7 +66,7 @@ func (i *client) GetTopSubredditImages(r string, n int) ([]string, error) {
 	ids := []string{}
 	page := 0
 	for len(ids) < n {
-		url := fmt.Sprintf(qGetSubredditImages, r, page)
+		url := fmt.Sprintf(urlGetSubredditImages, r, page)
 		page++
 		resp, err := anonClient.Get(url)
 		if err != nil {
@@ -86,4 +87,18 @@ func (i *client) GetTopSubredditImages(r string, n int) ([]string, error) {
 		}
 	}
 	return ids, nil
+}
+
+func (i *client) UploadImage(data []byte) (string, error) {
+	b64 := base64.StdEncoding.EncodeToString(data)
+	resp, err := anonClient.PostForm(urlUpload, url.Values{"image": []string{b64}})
+	if err != nil {
+		return "", err
+	}
+	bod, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	fmt.Println(string(bod))
+	return "", nil
 }

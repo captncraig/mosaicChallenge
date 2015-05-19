@@ -13,6 +13,17 @@ func NewLibrary(e Evaluator) *ThumbnailLibrary {
 	return &ThumbnailLibrary{e, map[image.Image]interface{}{}}
 }
 
+func (l *ThumbnailLibrary) GetSampleImages(n int) []image.Image {
+	list := []image.Image{}
+	for img, _ := range l.images {
+		list = append(list, img)
+		if len(list) == n {
+			break
+		}
+	}
+	return list
+}
+
 func (l *ThumbnailLibrary) AddImage(i image.Image) {
 	l.images[i] = l.evaluator.Evaluate(i, 0, 0, DefaultTileSize, DefaultTileSize)
 }

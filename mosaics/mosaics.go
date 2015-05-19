@@ -2,37 +2,32 @@
 package mosaics
 
 import (
-	"fmt"
 	"image"
 	"image/draw"
 )
 
 // TileSize is the expected size of each subImage. If images are larger than this value, only the top-left corner up to TileSize will be used.
-// If any dimension is smaller than this, they will be backfilled with white. If possible, subImages should be prescaled to a square of this size.
+// If any dimension is smaller than this, they will be backfilled with black. If possible, subImages should be prescaled to a square of this size.
 const DefaultTileSize = 90
 
 //Maximum dimension in an finalized mosaic. Target image will be scaled up or down such that its largest side is this length.
 const DefaultMaxDimension = DefaultTileSize * 70
 
-// BuildMosaic builds a master image from the provided subimages.
-func BuildMosaic(master image.Image, subImages []image.Image, evaluator Evaluator) image.Image {
-	lib := NewLibrary(evaluator)
-	for _, img := range subImages {
-		lib.AddImage(img)
-	}
-	return BuildMosaicFromLibrary(master, lib)
-}
-
-func BuildMosaicFromLibrary(master image.Image, tiles *ThumbnailLibrary) image.Image {
+func BuildMosaicFromLibrary(master image.Image, tiles *ThumbnailLibrary, reporter chan<- float64) image.Image {
 	tileSize := DefaultTileSize
+	//calculate final dimensions of resultant image
 	dim := getMosaicDimensions(master.Bounds().Dx(), master.Bounds().Dy(), DefaultMaxDimension, tileSize)
+
 	output := image.NewRGBA(image.Rect(0, 0, dim.width, dim.height))
+
 	for tileY := 0; tileY < dim.tilesY; tileY++ {
+		if reporter != nil {
+			reporter <- float64(tileY) / float64(dim.tilesY) * 100
+		}
 		for tileX := 0; tileX < dim.tilesX; tileX++ {
 			c := tiles.evaluator.Evaluate(master, tileX*dim.sourcePixelsPerTileX, tileY*dim.sourcePixelsPerTileY, dim.sourcePixelsPerTileX, dim.sourcePixelsPerTileY)
 			tile := tiles.getBestMatch(c)
 			rect := tile.Bounds().Add(image.Point{tileX * tileSize, tileY * tileSize})
-			fmt.Println(rect)
 			draw.Draw(output, rect, tile, image.ZP, draw.Over)
 		}
 	}
@@ -40,9 +35,8 @@ func BuildMosaicFromLibrary(master image.Image, tiles *ThumbnailLibrary) image.I
 }
 
 // Calclulates scaling factor for final mosaic so we can map original image tiles onto the final mosaic.
-// This method values safety over perfect accuracy. We want to avoid overflowing the image bounds when iterating without needing
-// to check. Because the minor dimension is stretched or truncated to be an even multiple of tilesize, we may see some distortion around the edges.
-// This is ok. Mosaics are a bit fuzzy anyway, so we embrace this for convenience.
+// Scale the largest side to the maxDimension, and scale the smaller side to (roughly) match, while still being a multiple of tile size in all dimensions.
+// Calculate the number of source pixels in each dimension that correspond to each output tile.
 func getMosaicDimensions(originalX, originalY int, maxDimension, tileSize int) *mosaicDimensions {
 	dim := mosaicDimensions{}
 	if originalX >= originalY {
@@ -53,14 +47,14 @@ func getMosaicDimensions(originalX, originalY int, maxDimension, tileSize int) *
 		dim.width = int(float64(originalX) * (float64(maxDimension) / float64(originalY)))
 	}
 	// Make sure we are a multiple of tile size in both directions.
-	if dim.height < tileSize {
-		dim.height = tileSize
+	sanitize := func(s int) int {
+		if s < tileSize {
+			return tileSize
+		}
+		return s - (s % tileSize)
 	}
-	dim.height -= dim.height % tileSize
-	if dim.width < tileSize {
-		dim.width = tileSize
-	}
-	dim.width -= dim.width % tileSize
+	dim.height = sanitize(dim.height)
+	dim.width = sanitize(dim.width)
 
 	//count tiles and source pixels per resultant tile
 	dim.tilesX = dim.width / tileSize
