@@ -104,7 +104,6 @@ var sampleImages = []string{
 	"http://i.imgur.com/qaHCKuM.jpg",
 	"http://i.imgur.com/9MGZuJU.jpg",
 	"http://i.imgur.com/SMEDFqW.jpg",
-	"http://i.imgur.com/bKSn5Ag.gif",
-	"http://i.imgur.com/HqdyvaC.gif",
-	"http://i.imgur.com/wWKAZyt.gif",
+	"http://www.empireonline.com/images/uploaded/marty-guitar.jpg",
+	"https://unsplash.imgix.net/photo-1421986527537-888d998adb74?fit=crop&fm=jpg&h=700&q=75&w=1050",
 }

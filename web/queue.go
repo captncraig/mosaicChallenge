@@ -158,7 +158,7 @@ func worker(q <-chan *job) {
 		j.updateStatus("Encoding image", "")
 		buf := &bytes.Buffer{}
 		jpeg.Encode(buf, mosaic, &jpeg.Options{30})
-		j.updateStatus("Done", fmt.Sprintf("<img width=500px src='data:image/jpg;base64,%s'/>", base64.StdEncoding.EncodeToString(buf.Bytes())))
+		j.updateStatus("Done", fmt.Sprintf("<img width=1000px src='data:image/jpg;base64,%s'/><br/>Right click to save.<br/><a href='/options'>Build another!</a>", base64.StdEncoding.EncodeToString(buf.Bytes())))
 	}
 }
 

@@ -2,8 +2,11 @@
 package mosaics
 
 import (
+	"bytes"
+	"fmt"
 	"image"
 	"image/draw"
+	"image/gif"
 )
 
 // TileSize is the expected size of each subImage. If images are larger than this value, only the top-left corner up to TileSize will be used.
@@ -70,4 +73,25 @@ type mosaicDimensions struct {
 	sourcePixelsPerTileX int
 	sourcePixelsPerTileY int
 	tilesX, tilesY       int
+}
+
+func BuildGifzaic(g *gif.GIF, tiles *ThumbnailLibrary, reporter chan<- float64) (*gif.GIF, error) {
+	for i, img := range g.Image {
+		fmt.Println(i, len(g.Image))
+		mozImg := BuildMosaicFromLibrary(img, tiles, nil)
+		mozImg = ResizePreserving(200, mozImg)
+		fmt.Println("encoding")
+		buf := &bytes.Buffer{}
+		err := gif.Encode(buf, mozImg, &gif.Options{50, nil, nil})
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println("decoding")
+		newGif, err := gif.DecodeAll(buf)
+		if err != nil {
+			return nil, err
+		}
+		g.Image[i] = newGif.Image[0]
+	}
+	return g, nil
 }

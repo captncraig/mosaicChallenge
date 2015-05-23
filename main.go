@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"github.com/captncraig/mosaicChallenge/mosaics"
 	"image"
+	"image/gif"
 	_ "image/gif"
-	"image/jpeg"
+	_ "image/jpeg"
 	_ "image/png"
 	"io/ioutil"
 	"log"
@@ -16,7 +17,7 @@ import (
 
 func main() {
 	lib := mosaics.NewLibrary(mosaics.AveragingEvaluator())
-	dirname := "collections/bttf"
+	dirname := "collections/designSeeds"
 	files, err := ioutil.ReadDir(dirname)
 	if err != nil {
 		log.Fatal(err)
@@ -26,22 +27,25 @@ func main() {
 		img, _ := parseFile(dirname, file.Name())
 		lib.AddImage(img)
 	}
-	f, err := os.Open("bttf.jpg")
+	f, err := os.Open("g.gif")
 	if err != nil {
 		log.Fatal(err)
 	}
-	master, _, err := image.Decode(f)
+
+	g, err := gif.DecodeAll(f)
 	if err != nil {
 		log.Fatal(err)
 	}
 	start := time.Now()
 	f.Close()
-	mos := mosaics.BuildMosaicFromLibrary(master, lib)
-	output, _ := os.Create("moz.jpg")
+	//mos := mosaics.BuildMosaicFromLibrary(g.Image[0], lib, nil)
+	out, err := mosaics.BuildGifzaic(g, lib, nil)
+	output, _ := os.Create("moz.gif")
 	fmt.Println(time.Now().Sub(start))
 	start = time.Now()
 	//fmt.Println(png.Encode(output, mos))
-	fmt.Println(jpeg.Encode(output, mos, &jpeg.Options{10}))
+	//fmt.Println(jpeg.Encode(output, mos, &jpeg.Options{10}))
+	fmt.Println(gif.EncodeAll(output, out))
 	fmt.Println(time.Now().Sub(start))
 	output.Close()
 }
