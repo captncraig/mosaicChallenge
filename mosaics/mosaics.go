@@ -3,10 +3,10 @@ package mosaics
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"image/draw"
 	"image/gif"
+	"log"
 )
 
 // TileSize is the expected size of each subImage. If images are larger than this value, only the top-left corner up to TileSize will be used.
@@ -77,16 +77,15 @@ type mosaicDimensions struct {
 
 func BuildGifzaic(g *gif.GIF, tiles *ThumbnailLibrary, reporter chan<- float64) (*gif.GIF, error) {
 	for i, img := range g.Image {
-		fmt.Println(i, len(g.Image))
-		mozImg := BuildMosaicFromLibrary(img, tiles, nil)
-		mozImg = ResizePreserving(200, mozImg)
-		fmt.Println("encoding")
+		log.Printf("Building frame %d of %d\n------------------\n", i+1, len(g.Image))
+		mozImg := BuildMosaicFromLibrary(img, tiles, reporter)
+		log.Printf("Encoding frame %d of %d\n", i+1, len(g.Image))
 		buf := &bytes.Buffer{}
 		err := gif.Encode(buf, mozImg, &gif.Options{50, nil, nil})
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("decoding")
+		log.Printf("Encoding frame %d of %d\n", i+1, len(g.Image))
 		newGif, err := gif.DecodeAll(buf)
 		if err != nil {
 			return nil, err
